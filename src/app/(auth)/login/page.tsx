@@ -29,7 +29,7 @@ export default function LoginPage() {
     setServerError(null)
     const supabase = createClient()
 
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data: signInData, error } = await supabase.auth.signInWithPassword({
       email: data.email,
       password: data.password,
     })
@@ -39,7 +39,17 @@ export default function LoginPage() {
       return
     }
 
-    router.push(redirectTo)
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', signInData.user?.id ?? '')
+      .single()
+
+    if (profile?.role === 'admin') {
+      router.push('/admin/products')
+    } else {
+      router.push(redirectTo)
+    }
     router.refresh()
   }
 
@@ -77,11 +87,7 @@ export default function LoginPage() {
         </h1>
         <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
           Belum punya akun?{' '}
-          <Link
-            href="/register"
-            className="font-medium transition-colors"
-            style={{ color: 'var(--brand-primary)' }}
-          >
+          <Link href="/register" className="font-medium transition-colors" style={{ color: 'var(--brand-primary)' }}>
             Daftar sekarang
           </Link>
         </p>

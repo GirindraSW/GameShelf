@@ -2,8 +2,10 @@
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
 import { Gamepad2, ShoppingCart, LogOut, User } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import { useCartStore } from '@/store/cartStore'
 
 interface NavbarProps {
   user: { email: string } | null
@@ -11,6 +13,10 @@ interface NavbarProps {
 
 export default function Navbar({ user }: NavbarProps) {
   const router = useRouter()
+  const [mounted, setMounted] = useState(false)
+  const totalItems = useCartStore((state) => state.totalItems())
+
+  useEffect(() => setMounted(true), [])
 
   async function handleLogout() {
     const supabase = createClient()
@@ -23,7 +29,7 @@ export default function Navbar({ user }: NavbarProps) {
     <header className="sticky top-0 z-50 border-b border-zinc-800 bg-zinc-950/90 backdrop-blur-sm">
       <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between gap-4">
         <Link
-          href="/products"
+          href="/"
           className="flex items-center gap-2 font-semibold text-white shrink-0"
         >
           <Gamepad2 size={18} className="text-blue-400" />
@@ -40,12 +46,16 @@ export default function Navbar({ user }: NavbarProps) {
         </nav>
 
         <div className="flex items-center gap-1 ml-auto">
-          {/* Cart — wired up Day 3 */}
           <Link
             href="/cart"
             className="relative p-2 text-zinc-400 hover:text-white transition-colors rounded-md hover:bg-zinc-800"
           >
             <ShoppingCart size={17} />
+            {mounted && totalItems > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 min-w-4 h-4 px-1 rounded-full bg-blue-500 text-white text-[10px] font-bold flex items-center justify-center leading-none">
+                {totalItems > 99 ? '99+' : totalItems}
+              </span>
+            )}
           </Link>
 
           {user ? (

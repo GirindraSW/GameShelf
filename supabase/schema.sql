@@ -134,6 +134,21 @@ alter table public.orders       enable row level security;
 alter table public.order_items  enable row level security;
 alter table public.payment_logs enable row level security;
 
+-- Helper untuk cek admin tanpa memicu rekursi RLS di tabel profiles.
+create or replace function public.is_admin()
+returns boolean
+language sql
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1
+    from public.profiles
+    where id = auth.uid()
+      and role = 'admin'
+  );
+$$;
+
 
 -- ─── PROFILES policies ───────────────────────────────────────
 create policy "User bisa lihat profil sendiri"
@@ -146,12 +161,7 @@ create policy "User bisa update profil sendiri"
 
 create policy "Admin bisa lihat semua profil"
   on public.profiles for select
-  using (
-    exists (
-      select 1 from public.profiles
-      where id = auth.uid() and role = 'admin'
-    )
-  );
+  using (public.is_admin());
 
 
 -- ─── CATEGORIES policies ─────────────────────────────────────
@@ -161,12 +171,7 @@ create policy "Siapapun bisa lihat kategori"
 
 create policy "Hanya admin yang bisa kelola kategori"
   on public.categories for all
-  using (
-    exists (
-      select 1 from public.profiles
-      where id = auth.uid() and role = 'admin'
-    )
-  );
+  using (public.is_admin());
 
 
 -- ─── PRODUCTS policies ───────────────────────────────────────
@@ -176,21 +181,11 @@ create policy "Siapapun bisa lihat produk aktif"
 
 create policy "Admin bisa lihat semua produk"
   on public.products for select
-  using (
-    exists (
-      select 1 from public.profiles
-      where id = auth.uid() and role = 'admin'
-    )
-  );
+  using (public.is_admin());
 
 create policy "Hanya admin yang bisa kelola produk"
   on public.products for all
-  using (
-    exists (
-      select 1 from public.profiles
-      where id = auth.uid() and role = 'admin'
-    )
-  );
+  using (public.is_admin());
 
 
 -- ─── ORDERS policies ─────────────────────────────────────────
@@ -204,21 +199,11 @@ create policy "User bisa buat order"
 
 create policy "Admin bisa lihat semua order"
   on public.orders for select
-  using (
-    exists (
-      select 1 from public.profiles
-      where id = auth.uid() and role = 'admin'
-    )
-  );
+  using (public.is_admin());
 
 create policy "Admin bisa update order"
   on public.orders for update
-  using (
-    exists (
-      select 1 from public.profiles
-      where id = auth.uid() and role = 'admin'
-    )
-  );
+  using (public.is_admin());
 
 
 -- ─── ORDER ITEMS policies ────────────────────────────────────
@@ -242,23 +227,13 @@ create policy "User bisa insert item order sendiri"
 
 create policy "Admin bisa lihat semua order items"
   on public.order_items for select
-  using (
-    exists (
-      select 1 from public.profiles
-      where id = auth.uid() and role = 'admin'
-    )
-  );
+  using (public.is_admin());
 
 
 -- ─── PAYMENT LOGS policies ───────────────────────────────────
 create policy "Admin bisa lihat semua payment logs"
   on public.payment_logs for all
-  using (
-    exists (
-      select 1 from public.profiles
-      where id = auth.uid() and role = 'admin'
-    )
-  );
+  using (public.is_admin());
 
 -- Service role (digunakan server-side untuk webhook Midtrans)
 -- sudah bypass RLS secara default, tidak perlu policy khusus.

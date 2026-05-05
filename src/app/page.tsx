@@ -6,6 +6,8 @@ import Link from 'next/link'
 import { ArrowRight, Gamepad2, Package, ShieldCheck, Truck } from 'lucide-react'
 import type { Category, ProductWithCategory } from '@/types'
 
+export const dynamic = 'force-dynamic'
+
 const PERKS = [
   {
     icon: Package,
@@ -40,7 +42,6 @@ export default async function HomePage() {
     .from('categories')
     .select('*')
     .order('name')
-    .limit(6)
 
   return (
     <div className="min-h-screen bg-zinc-950">

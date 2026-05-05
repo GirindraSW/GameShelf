@@ -2,11 +2,12 @@ import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import { ImageGallery } from '@/components/shop/ImageGallery'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { ArrowLeft, ShoppingCart } from 'lucide-react'
+import { AddToCartButton } from '@/components/shop/AddToCartButton'
+import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import { formatPrice } from '@/lib/utils'
 import type { Metadata } from 'next'
+import type { ProductWithCategory } from '@/types'
 
 export async function generateMetadata({
   params,
@@ -15,10 +16,14 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params
   const supabase = await createClient()
-  const { data } = await supabase.from('products').select('name, description').eq('slug', slug).single()
+  const { data } = await supabase
+    .from('products')
+    .select('name, description')
+    .eq('slug', slug)
+    .single()
   return {
-    title: data?.name ?? 'Produk',
-    description: data?.description ?? undefined,
+    title: (data as { name: string; description: string | null } | null)?.name ?? 'Produk',
+    description: (data as { name: string; description: string | null } | null)?.description ?? undefined,
   }
 }
 
@@ -30,15 +35,16 @@ export default async function ProductDetailPage({
   const { slug } = await params
   const supabase = await createClient()
 
-  const { data: product } = await supabase
+  const { data } = await supabase
     .from('products')
     .select('*, categories(id, name, slug, description)')
     .eq('slug', slug)
     .eq('is_active', true)
     .single()
 
-  if (!product) notFound()
+  if (!data) notFound()
 
+  const product = data as ProductWithCategory
   const isOutOfStock = product.stock === 0
 
   return (
@@ -79,15 +85,15 @@ export default async function ProductDetailPage({
             )}
           </div>
 
-          {/* Add to cart — wired up Day 3 */}
-          <Button
-            size="lg"
-            disabled={isOutOfStock}
-            className="w-full sm:w-auto gap-2"
-          >
-            <ShoppingCart size={16} />
-            {isOutOfStock ? 'Stok Habis' : 'Tambah ke Keranjang'}
-          </Button>
+          <AddToCartButton
+            product={{
+              id: product.id,
+              name: product.name,
+              price: product.price,
+              stock: product.stock,
+              images: product.images ?? [],
+            }}
+          />
 
           {product.description && (
             <div className="border-t border-zinc-800 pt-6">

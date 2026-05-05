@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import type { ProductWithCategory } from '@/types'
 
+export const dynamic = 'force-dynamic'
+
 const PAGE_SIZE = 12
 
 export default async function ProductsPage({
