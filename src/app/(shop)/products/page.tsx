@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { ProductCard } from '@/components/shop/ProductCard'
 import { ProductFilters } from '@/components/shop/ProductFilters'
+import { ProductRealtimeRefresh } from '@/components/shop/ProductRealtimeRefresh'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import type { ProductWithCategory } from '@/types'
@@ -8,6 +9,7 @@ import type { ProductWithCategory } from '@/types'
 export const dynamic = 'force-dynamic'
 
 const PAGE_SIZE = 12
+type CategoryIdResult = { data: { id: string } | null }
 
 export default async function ProductsPage({
   searchParams,
@@ -25,10 +27,10 @@ export default async function ProductsPage({
     supabase.from('categories').select('*').order('name'),
     category
       ? supabase.from('categories').select('id').eq('slug', category).single()
-      : Promise.resolve({ data: null }),
+      : Promise.resolve({ data: null } satisfies CategoryIdResult),
   ])
 
-  const categoryId = categoryResult.data?.id
+  const categoryId = (categoryResult as CategoryIdResult).data?.id
 
   let query = supabase
     .from('products')
@@ -59,6 +61,7 @@ export default async function ProductsPage({
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8 space-y-8">
+      <ProductRealtimeRefresh />
       <ProductFilters
         categories={categories ?? []}
         activeCategory={category}

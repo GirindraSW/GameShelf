@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import Navbar from '@/components/shop/Navbar'
 import { ProductCard } from '@/components/shop/ProductCard'
+import { ProductRealtimeRefresh } from '@/components/shop/ProductRealtimeRefresh'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { ArrowRight, Gamepad2, Package, ShieldCheck, Truck } from 'lucide-react'
@@ -45,6 +46,7 @@ export default async function HomePage() {
 
   return (
     <div className="min-h-screen bg-zinc-950">
+      <ProductRealtimeRefresh />
       <Navbar user={user ? { email: user.email ?? '' } : null} />
 
       {/* Hero */}

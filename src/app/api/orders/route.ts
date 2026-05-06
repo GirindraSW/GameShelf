@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { checkoutSchema } from '@/lib/validations/checkout'
-import type { CartItem } from '@/types'
+import { sendOrderConfirmationEmail } from '@/lib/email'
+import type { CartItem, ShippingAddress } from '@/types'
 
 export async function POST(req: NextRequest) {
   const supabase = await createClient()
@@ -48,6 +49,15 @@ export async function POST(req: NextRequest) {
 
   const { error: itemsError } = await supabase.from('order_items').insert(orderItems)
   if (itemsError) return NextResponse.json({ error: itemsError.message }, { status: 500 })
+
+  // Kirim email konfirmasi (non-blocking)
+  sendOrderConfirmationEmail({
+    orderId: order.id,
+    userEmail: user.email ?? '',
+    items: items as CartItem[],
+    totalAmount: total_amount,
+    shippingAddress: parsed.data as ShippingAddress,
+  })
 
   return NextResponse.json({ order_id: order.id }, { status: 201 })
 }

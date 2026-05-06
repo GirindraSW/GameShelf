@@ -3,6 +3,8 @@ import { notFound } from 'next/navigation'
 import { ImageGallery } from '@/components/shop/ImageGallery'
 import { Badge } from '@/components/ui/badge'
 import { AddToCartButton } from '@/components/shop/AddToCartButton'
+import { StockRealtimeDisplay } from '@/components/shop/StockRealtimeDisplay'
+import { ProductRealtimeRefresh } from '@/components/shop/ProductRealtimeRefresh'
 import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import { formatPrice } from '@/lib/utils'
@@ -45,10 +47,10 @@ export default async function ProductDetailPage({
   if (!data) notFound()
 
   const product = data as ProductWithCategory
-  const isOutOfStock = product.stock === 0
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
+      <ProductRealtimeRefresh productId={product.id} />
       <Link
         href="/products"
         className="inline-flex items-center gap-1.5 text-sm text-zinc-500 hover:text-white transition-colors mb-8"
@@ -73,16 +75,7 @@ export default async function ProductDetailPage({
           </div>
 
           <div className="flex items-center gap-2">
-            {isOutOfStock ? (
-              <span className="text-sm font-medium text-red-400">Stok habis</span>
-            ) : (
-              <span className="text-sm text-zinc-400">
-                Stok tersedia:{' '}
-                <span className={product.stock <= 5 ? 'text-yellow-400 font-medium' : 'text-zinc-300'}>
-                  {product.stock} unit
-                </span>
-              </span>
-            )}
+            <StockRealtimeDisplay productId={product.id} initialStock={product.stock} />
           </div>
 
           <AddToCartButton

@@ -6,6 +6,7 @@ import { LayoutDashboard, Package, ShoppingCart, LogOut } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
 const navItems = [
+  { href: '/admin/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { href: '/admin/products', icon: Package, label: 'Produk' },
   { href: '/admin/orders', icon: ShoppingCart, label: 'Order' },
 ]
@@ -21,7 +22,7 @@ export default function AdminSidebar() {
   }
 
   return (
-    <aside className="w-60 shrink-0 border-r border-zinc-800 bg-zinc-900 flex flex-col">
+    <aside className="w-60 shrink-0 border-r border-zinc-800 bg-zinc-900 flex flex-col sticky top-0 h-screen">
       <div className="p-5 border-b border-zinc-800">
         <p className="text-xs text-zinc-500 uppercase tracking-widest mb-0.5">Admin Panel</p>
         <h1 className="text-base font-semibold text-white">GameShelf</h1>

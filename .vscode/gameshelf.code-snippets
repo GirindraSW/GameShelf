@@ -1,0 +1,362 @@
+{
+  // ─── Next.js Components ──────────────────────────────────────────────────────
+
+  "Next Server Component": {
+    "prefix": "nsc",
+    "description": "Next.js Server Component dengan Supabase",
+    "body": [
+      "import { createClient } from '@/lib/supabase/server'",
+      "",
+      "export default async function ${1:PageName}() {",
+      "  const supabase = await createClient()",
+      "",
+      "  const { data: ${2:data} } = await supabase",
+      "    .from('${3:table}')",
+      "    .select('*')",
+      "",
+      "  return (",
+      "    <div className=\"${4:max-w-6xl mx-auto px-4 py-8}\">",
+      "      $0",
+      "    </div>",
+      "  )",
+      "}"
+    ]
+  },
+
+  "Next Client Component": {
+    "prefix": "ncc",
+    "description": "Next.js Client Component dengan useState",
+    "body": [
+      "\"use client\"",
+      "",
+      "import { useState } from 'react'",
+      "",
+      "export function ${1:ComponentName}() {",
+      "  const [${2:state}, set${2/(.*)/${1:/capitalize}/}] = useState(${3:null})",
+      "",
+      "  return (",
+      "    <div>",
+      "      $0",
+      "    </div>",
+      "  )",
+      "}"
+    ]
+  },
+
+  "Next Page with Dynamic": {
+    "prefix": "npd",
+    "description": "Next.js page dengan force-dynamic dan Supabase",
+    "body": [
+      "import { createClient } from '@/lib/supabase/server'",
+      "",
+      "export const dynamic = 'force-dynamic'",
+      "",
+      "export default async function ${1:PageName}() {",
+      "  const supabase = await createClient()",
+      "",
+      "  const { data: ${2:data} } = await supabase",
+      "    .from('${3:table}')",
+      "    .select('*')",
+      "    .order('created_at', { ascending: false })",
+      "",
+      "  return (",
+      "    <div className=\"max-w-6xl mx-auto px-4 py-8\">",
+      "      $0",
+      "    </div>",
+      "  )",
+      "}"
+    ]
+  },
+
+  // ─── API Routes ───────────────────────────────────────────────────────────────
+
+  "API Route Auth": {
+    "prefix": "api-auth",
+    "description": "API Route dengan cek autentikasi",
+    "body": [
+      "import { NextRequest, NextResponse } from 'next/server'",
+      "import { createClient } from '@/lib/supabase/server'",
+      "",
+      "export async function ${1|GET,POST,PUT,PATCH,DELETE|}(req: NextRequest) {",
+      "  const supabase = await createClient()",
+      "  const { data: { user } } = await supabase.auth.getUser()",
+      "  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })",
+      "",
+      "  $0",
+      "",
+      "  return NextResponse.json({ success: true })",
+      "}"
+    ]
+  },
+
+  "API Route Admin": {
+    "prefix": "api-admin",
+    "description": "API Route dengan cek admin role",
+    "body": [
+      "import { NextRequest, NextResponse } from 'next/server'",
+      "import { createClient } from '@/lib/supabase/server'",
+      "import { createAdminClient } from '@/lib/supabase/admin'",
+      "",
+      "export async function ${1|GET,POST,PUT,PATCH,DELETE|}(req: NextRequest) {",
+      "  const supabase = await createClient()",
+      "  const { data: { user } } = await supabase.auth.getUser()",
+      "  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })",
+      "",
+      "  const { data: profile } = await supabase",
+      "    .from('profiles').select('role').eq('id', user.id).single()",
+      "  if (profile?.role !== 'admin') {",
+      "    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })",
+      "  }",
+      "",
+      "  const admin = createAdminClient()",
+      "  $0",
+      "",
+      "  return NextResponse.json({ success: true })",
+      "}"
+    ]
+  },
+
+  "API Route with Params": {
+    "prefix": "api-params",
+    "description": "API Route dengan dynamic params",
+    "body": [
+      "import { NextRequest, NextResponse } from 'next/server'",
+      "import { createClient } from '@/lib/supabase/server'",
+      "",
+      "export async function ${1|GET,POST,PUT,PATCH,DELETE|}(",
+      "  req: NextRequest,",
+      "  { params }: { params: Promise<{ ${2:id}: string }> }",
+      ") {",
+      "  const { ${2:id} } = await params",
+      "  const supabase = await createClient()",
+      "  const { data: { user } } = await supabase.auth.getUser()",
+      "  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })",
+      "",
+      "  $0",
+      "",
+      "  return NextResponse.json({ success: true })",
+      "}"
+    ]
+  },
+
+  // ─── Supabase ─────────────────────────────────────────────────────────────────
+
+  "Supabase Select": {
+    "prefix": "sb-select",
+    "description": "Supabase SELECT query",
+    "body": [
+      "const { data: ${1:data}, error } = await ${2:supabase}",
+      "  .from('${3:table}')",
+      "  .select('${4:*}')",
+      "  .order('created_at', { ascending: false })",
+      "$0"
+    ]
+  },
+
+  "Supabase Insert": {
+    "prefix": "sb-insert",
+    "description": "Supabase INSERT query",
+    "body": [
+      "const { data: ${1:data}, error } = await ${2:supabase}",
+      "  .from('${3:table}')",
+      "  .insert({",
+      "    $0",
+      "  })",
+      "  .select()",
+      "  .single()",
+      "",
+      "if (error) return NextResponse.json({ error: error.message }, { status: 500 })"
+    ]
+  },
+
+  "Supabase Update": {
+    "prefix": "sb-update",
+    "description": "Supabase UPDATE query",
+    "body": [
+      "const { data: ${1:data}, error } = await ${2:supabase}",
+      "  .from('${3:table}')",
+      "  .update({ ${4:field}: ${5:value}, updated_at: new Date().toISOString() })",
+      "  .eq('id', ${6:id})",
+      "  .select()",
+      "  .single()",
+      "",
+      "if (error) return NextResponse.json({ error: error.message }, { status: 500 })"
+    ]
+  },
+
+  "Supabase Delete": {
+    "prefix": "sb-delete",
+    "description": "Supabase DELETE query",
+    "body": [
+      "const { error } = await ${1:supabase}",
+      "  .from('${2:table}')",
+      "  .delete()",
+      "  .eq('id', ${3:id})",
+      "",
+      "if (error) return NextResponse.json({ error: error.message }, { status: 500 })"
+    ]
+  },
+
+  "Supabase Get User": {
+    "prefix": "sb-user",
+    "description": "Supabase ambil user session",
+    "body": [
+      "const { data: { user } } = await supabase.auth.getUser()",
+      "if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })"
+    ]
+  },
+
+  // ─── React Hook Form + Zod ────────────────────────────────────────────────────
+
+  "Form Schema Zod": {
+    "prefix": "zod-schema",
+    "description": "Zod schema untuk form",
+    "body": [
+      "import { z } from 'zod'",
+      "",
+      "export const ${1:formName}Schema = z.object({",
+      "  ${2:field}: z.string().min(1, '${3:Field wajib diisi}'),",
+      "  $0",
+      "})",
+      "",
+      "export type ${1:FormName}Input = z.infer<typeof ${1:formName}Schema>"
+    ]
+  },
+
+  "useForm Hook": {
+    "prefix": "use-form",
+    "description": "React Hook Form dengan Zod resolver",
+    "body": [
+      "const {",
+      "  register,",
+      "  handleSubmit,",
+      "  formState: { errors, isSubmitting },",
+      "} = useForm<${1:FormType}>({",
+      "  resolver: zodResolver(${2:schema}),",
+      "  defaultValues: {",
+      "    $0",
+      "  },",
+      "})"
+    ]
+  },
+
+  "Form Field": {
+    "prefix": "form-field",
+    "description": "Form field dengan label dan error",
+    "body": [
+      "<div className=\"space-y-1.5\">",
+      "  <label className=\"text-sm font-medium text-zinc-300\">${1:Label}</label>",
+      "  <Input {...register('${2:field}')} placeholder=\"${3:placeholder}\" />",
+      "  {errors.${2:field} && (",
+      "    <p className=\"text-xs text-red-400\">{errors.${2:field}?.message}</p>",
+      "  )}",
+      "</div>"
+    ]
+  },
+
+  // ─── UI Patterns ──────────────────────────────────────────────────────────────
+
+  "Empty State": {
+    "prefix": "empty-state",
+    "description": "Tampilan kosong dengan icon dan pesan",
+    "body": [
+      "<div className=\"text-center py-20\">",
+      "  <${1:Package} size={40} className=\"mx-auto text-zinc-700 mb-3\" />",
+      "  <p className=\"text-zinc-400 font-medium\">${2:Belum ada data}</p>",
+      "  <p className=\"text-zinc-600 text-sm mt-1\">${3:Deskripsi singkat}</p>",
+      "</div>"
+    ]
+  },
+
+  "Loading Skeleton": {
+    "prefix": "skeleton",
+    "description": "Skeleton loading placeholder",
+    "body": [
+      "<div className=\"${1:h-8} ${2:w-48} rounded-lg bg-zinc-800 animate-pulse\" />"
+    ]
+  },
+
+  "Dark Card": {
+    "prefix": "dark-card",
+    "description": "Card dengan dark theme",
+    "body": [
+      "<div className=\"rounded-xl bg-zinc-900 border border-zinc-800 p-${1:5}\">",
+      "  $0",
+      "</div>"
+    ]
+  },
+
+  "Status Badge": {
+    "prefix": "badge-status",
+    "description": "Badge warna berdasarkan status",
+    "body": [
+      "<span className={`text-xs font-medium px-2.5 py-1 rounded-full ${{",
+      "  pending:    'text-yellow-400 bg-yellow-950/40',",
+      "  paid:       'text-blue-400 bg-blue-950/40',",
+      "  processing: 'text-purple-400 bg-purple-950/40',",
+      "  shipped:    'text-cyan-400 bg-cyan-950/40',",
+      "  delivered:  'text-green-400 bg-green-950/40',",
+      "  cancelled:  'text-red-400 bg-red-950/40',",
+      "}[${1:status}] ?? 'text-zinc-400 bg-zinc-800'}`}>",
+      "  {${1:status}}",
+      "</span>"
+    ]
+  },
+
+  "Format Price IDR": {
+    "prefix": "fmt-price",
+    "description": "Format harga ke Rupiah",
+    "body": [
+      "{formatPrice(${1:price})}"
+    ]
+  },
+
+  // ─── Supabase Realtime ────────────────────────────────────────────────────────
+
+  "Realtime Subscription": {
+    "prefix": "sb-realtime",
+    "description": "Supabase Realtime subscription hook",
+    "body": [
+      "useEffect(() => {",
+      "  const supabase = createClient()",
+      "  const channel = supabase",
+      "    .channel('${1:channel-name}')",
+      "    .on('postgres_changes', {",
+      "      event: '${2|UPDATE,INSERT,DELETE,*|}',",
+      "      schema: 'public',",
+      "      table: '${3:table}',",
+      "      filter: `${4:id}=eq.\\${${5:id}}`,",
+      "    }, (payload) => {",
+      "      $0",
+      "    })",
+      "    .subscribe()",
+      "  return () => { supabase.removeChannel(channel) }",
+      "}, [${6:id}])"
+    ]
+  },
+
+  // ─── Error Handling ───────────────────────────────────────────────────────────
+
+  "Try Catch API": {
+    "prefix": "try-api",
+    "description": "Try-catch untuk fetch API",
+    "body": [
+      "try {",
+      "  const res = await fetch('${1:/api/endpoint}', {",
+      "    method: '${2|GET,POST,PUT,PATCH,DELETE|}',",
+      "    headers: { 'Content-Type': 'application/json' },",
+      "    body: JSON.stringify(${3:data}),",
+      "  })",
+      "  if (!res.ok) {",
+      "    const err = await res.json()",
+      "    throw new Error(err.error ?? 'Terjadi kesalahan')",
+      "  }",
+      "  const result = await res.json()",
+      "  $0",
+      "} catch (err) {",
+      "  console.error(err)",
+      "  ${4:setError}(err instanceof Error ? err.message : 'Terjadi kesalahan')",
+      "}"
+    ]
+  }
+}

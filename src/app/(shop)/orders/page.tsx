@@ -2,17 +2,32 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { formatPrice } from '@/lib/utils'
+import { OrderRealtimeRefresh } from '@/components/shop/OrderRealtimeRefresh'
 import { Package, ChevronRight } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
 
+type OrderListItem = {
+  id: string
+  status: string
+  total_amount: number
+  order_items: {
+    quantity: number
+    price_at_purchase: number
+    products: {
+      name: string
+      images: string[]
+    } | null
+  }[]
+}
+
 const STATUS_LABEL: Record<string, { label: string; color: string }> = {
-  pending:    { label: 'Menunggu Pembayaran', color: 'text-yellow-400 bg-yellow-950/40' },
-  paid:       { label: 'Dibayar',             color: 'text-green-400 bg-green-950/40'  },
-  processing: { label: 'Diproses',            color: 'text-blue-400 bg-blue-950/40'    },
-  shipped:    { label: 'Dikirim',             color: 'text-blue-400 bg-blue-950/40'    },
-  delivered:  { label: 'Selesai',             color: 'text-green-400 bg-green-950/40'  },
-  cancelled:  { label: 'Dibatalkan',          color: 'text-red-400 bg-red-950/40'      },
+  pending:    { label: 'Belum Dibayar', color: 'text-yellow-400 bg-yellow-950/40'  },
+  paid:       { label: 'Sudah Dibayar', color: 'text-blue-400 bg-blue-950/40'      },
+  processing: { label: 'Dikemas',       color: 'text-purple-400 bg-purple-950/40'  },
+  shipped:    { label: 'Dikirim',       color: 'text-cyan-400 bg-cyan-950/40'      },
+  delivered:  { label: 'Selesai',       color: 'text-green-400 bg-green-950/40'    },
+  cancelled:  { label: 'Dibatalkan',    color: 'text-red-400 bg-red-950/40'        },
 }
 
 export default async function OrdersPage() {
@@ -29,6 +44,7 @@ export default async function OrdersPage() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
+      <OrderRealtimeRefresh userId={user.id} />
       <h1 className="text-xl font-semibold text-white mb-6">Pesanan Saya</h1>
 
       {!orders || orders.length === 0 ? (
@@ -45,7 +61,7 @@ export default async function OrdersPage() {
         </div>
       ) : (
         <div className="space-y-3">
-          {(orders as any[]).map((order) => {
+          {(orders as OrderListItem[]).map((order) => {
             const statusInfo = STATUS_LABEL[order.status] ?? STATUS_LABEL.pending
             const firstItem = order.order_items?.[0]
             const itemCount = order.order_items?.length ?? 0

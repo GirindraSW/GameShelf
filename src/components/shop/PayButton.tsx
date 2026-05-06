@@ -53,13 +53,41 @@ export function PayButton({ orderId }: PayButtonProps) {
       const { snap_token } = await res.json()
 
       window.snap.pay(snap_token, {
-        onSuccess: () => router.refresh(),
-        onPending: () => router.refresh(),
-        onError: () => setError('Pembayaran gagal. Coba lagi.'),
+        onSuccess: async () => {
+          // Otomatis update status + kurangi stok tanpa perlu klik tombol
+          await fetch(`/api/payment/status/${orderId}`, { method: 'POST' })
+          router.refresh()
+        },
+        onPending: () => {
+          setLoading(false)
+          router.refresh()
+        },
+        onError: () => {
+          setError('Pembayaran gagal. Coba lagi.')
+          setLoading(false)
+        },
         onClose: () => setLoading(false),
       })
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Terjadi kesalahan')
+      setLoading(false)
+    }
+  }
+
+  async function handleCheckStatus() {
+    setLoading(true)
+    setError('')
+    try {
+      const res = await fetch(`/api/payment/status/${orderId}`, { method: 'POST' })
+      const data = await res.json()
+      if (data.status && data.status !== 'pending') {
+        router.refresh()
+      } else {
+        setError('Pembayaran belum dikonfirmasi Midtrans. Coba lagi dalam beberapa saat.')
+      }
+    } catch {
+      setError('Gagal cek status')
+    } finally {
       setLoading(false)
     }
   }
@@ -77,6 +105,15 @@ export function PayButton({ orderId }: PayButtonProps) {
             ? <Loader2 size={15} className="animate-spin" />
             : <CreditCard size={15} />}
           {loading ? 'Memproses...' : 'Bayar Sekarang'}
+        </Button>
+        <Button
+          onClick={handleCheckStatus}
+          disabled={loading}
+          variant="outline"
+          className="w-full text-xs"
+        >
+          {loading ? <Loader2 size={13} className="animate-spin" /> : null}
+          Cek Status Pembayaran
         </Button>
         {error && <p className="text-xs text-red-400 text-center">{error}</p>}
       </div>

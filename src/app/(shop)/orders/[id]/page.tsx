@@ -3,6 +3,8 @@ import { notFound } from 'next/navigation'
 import { CheckCircle, Clock, Package, Truck, XCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { PayButton } from '@/components/shop/PayButton'
+import { OrderStatusWatcher } from '@/components/shop/OrderStatusWatcher'
+import { OrderTimeline } from '@/components/shop/OrderTimeline'
 import Link from 'next/link'
 import { formatPrice } from '@/lib/utils'
 import type { Order, ShippingAddress } from '@/types'
@@ -12,12 +14,12 @@ type OrderWithItems = Order & {
 }
 
 const STATUS_MAP = {
-  pending:    { label: 'Menunggu Pembayaran', icon: Clock,        color: 'text-yellow-400', bg: 'bg-yellow-950/40 border-yellow-900/50' },
-  paid:       { label: 'Pembayaran Berhasil', icon: CheckCircle,  color: 'text-green-400',  bg: 'bg-green-950/40 border-green-900/50'  },
-  processing: { label: 'Sedang Diproses',     icon: Package,      color: 'text-blue-400',   bg: 'bg-blue-950/40 border-blue-900/50'    },
-  shipped:    { label: 'Sedang Dikirim',      icon: Truck,        color: 'text-blue-400',   bg: 'bg-blue-950/40 border-blue-900/50'    },
-  delivered:  { label: 'Pesanan Tiba',        icon: CheckCircle,  color: 'text-green-400',  bg: 'bg-green-950/40 border-green-900/50'  },
-  cancelled:  { label: 'Dibatalkan',          icon: XCircle,      color: 'text-red-400',    bg: 'bg-red-950/40 border-red-900/50'      },
+  pending:    { label: 'Belum Dibayar',  icon: Clock,        color: 'text-yellow-400', bg: 'bg-yellow-950/40 border-yellow-900/50' },
+  paid:       { label: 'Sudah Dibayar',  icon: CheckCircle,  color: 'text-blue-400',   bg: 'bg-blue-950/40 border-blue-900/50'    },
+  processing: { label: 'Dikemas',        icon: Package,      color: 'text-purple-400', bg: 'bg-purple-950/40 border-purple-900/50' },
+  shipped:    { label: 'Dikirim',        icon: Truck,        color: 'text-cyan-400',   bg: 'bg-cyan-950/40 border-cyan-900/50'    },
+  delivered:  { label: 'Selesai',        icon: CheckCircle,  color: 'text-green-400',  bg: 'bg-green-950/40 border-green-900/50'  },
+  cancelled:  { label: 'Dibatalkan',     icon: XCircle,      color: 'text-red-400',    bg: 'bg-red-950/40 border-red-900/50'      },
 } as const
 
 export const dynamic = 'force-dynamic'
@@ -49,6 +51,7 @@ export default async function OrderDetailPage({
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-16">
+      <OrderStatusWatcher orderId={typedOrder.id} />
       <div className="text-center mb-10">
         <div className={`inline-flex items-center justify-center w-16 h-16 rounded-full mb-4 ${status.bg.split(' ')[0]}`}>
           <StatusIcon size={32} className={status.color} />
@@ -58,6 +61,13 @@ export default async function OrderDetailPage({
       </div>
 
       <div className="space-y-4">
+        {/* Timeline */}
+        <OrderTimeline
+          status={typedOrder.status}
+          createdAt={typedOrder.created_at}
+          updatedAt={typedOrder.updated_at}
+        />
+
         {/* Items */}
         <div className="rounded-xl bg-zinc-900 border border-zinc-800 p-5 space-y-4">
           <h2 className="font-semibold text-white flex items-center gap-2">

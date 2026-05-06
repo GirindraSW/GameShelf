@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { markOrderPaid } from '@/lib/orderUtils'
 import crypto from 'crypto'
 
 export async function POST(req: NextRequest) {
@@ -26,20 +27,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid signature' }, { status: 401 })
   }
 
-  // Tentukan status order berdasarkan notifikasi Midtrans
-  let orderStatus: string | null = null
-
-  if (
-    (transaction_status === 'capture' && fraud_status === 'accept') ||
-    transaction_status === 'settlement'
-  ) {
-    orderStatus = 'paid'
-  } else if (['cancel', 'deny', 'expire'].includes(transaction_status)) {
-    orderStatus = 'cancelled'
-  } else if (transaction_status === 'pending') {
-    orderStatus = 'pending'
-  }
-
   const admin = createAdminClient()
 
   // Log semua notifikasi masuk
@@ -50,32 +37,20 @@ export async function POST(req: NextRequest) {
     raw_response: body,
   })
 
-  if (!orderStatus) return NextResponse.json({ ok: true })
+  const isPaid =
+    (transaction_status === 'capture' && fraud_status === 'accept') ||
+    transaction_status === 'settlement' ||
+    transaction_status === 'success'
 
-  // Update status order
-  const { data: order } = await admin
-    .from('orders')
-    .update({ status: orderStatus, updated_at: new Date().toISOString() })
-    .eq('id', order_id)
-    .select('*, order_items(*)')
-    .single()
+  const isCancelled = ['cancel', 'deny', 'expire'].includes(transaction_status)
 
-  // Kurangi stok saat order paid
-  if (orderStatus === 'paid' && order) {
-    for (const item of order.order_items as any[]) {
-      const { data: product } = await admin
-        .from('products')
-        .select('stock')
-        .eq('id', item.product_id)
-        .single()
-
-      if (product && product.stock >= item.quantity) {
-        await admin
-          .from('products')
-          .update({ stock: product.stock - item.quantity })
-          .eq('id', item.product_id)
-      }
-    }
+  if (isPaid) {
+    await markOrderPaid(order_id)
+  } else if (isCancelled) {
+    await admin
+      .from('orders')
+      .update({ status: 'cancelled', updated_at: new Date().toISOString() })
+      .eq('id', order_id)
   }
 
   return NextResponse.json({ ok: true })

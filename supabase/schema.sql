@@ -134,6 +134,20 @@ alter table public.orders       enable row level security;
 alter table public.order_items  enable row level security;
 alter table public.payment_logs enable row level security;
 
+do $$
+begin
+  alter publication supabase_realtime add table public.orders;
+exception
+  when duplicate_object then null;
+end $$;
+
+do $$
+begin
+  alter publication supabase_realtime add table public.products;
+exception
+  when duplicate_object then null;
+end $$;
+
 -- Helper untuk cek admin tanpa memicu rekursi RLS di tabel profiles.
 create or replace function public.is_admin()
 returns boolean
