@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -9,7 +9,7 @@ import { Gamepad2, Eye, EyeOff, Loader2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { loginSchema, type LoginInput } from '@/lib/validations/auth'
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const redirectTo = searchParams.get('redirectTo') ?? '/'
@@ -202,5 +202,26 @@ export default function LoginPage() {
         </button>
       </form>
     </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div
+          className="rounded-2xl p-8 border flex items-center justify-center"
+          style={{
+            backgroundColor: 'var(--bg-surface)',
+            borderColor: 'var(--border-subtle)',
+            minHeight: 420,
+          }}
+        >
+          <Loader2 className="w-5 h-5 animate-spin" style={{ color: 'var(--brand-primary)' }} />
+        </div>
+      }
+    >
+      <LoginForm />
+    </Suspense>
   )
 }

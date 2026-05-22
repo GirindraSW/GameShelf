@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ snap_token: order.midtrans_snap_token })
   }
 
-  const shipping = order.shipping_address as ShippingAddress
+  const shipping = order.shipping_address as unknown as ShippingAddress
 
   const parameter = {
     transaction_details: {

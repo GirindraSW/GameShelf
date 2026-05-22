@@ -2,10 +2,11 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { formatPrice } from '@/lib/utils'
 import { TrendingUp, Package, ShoppingBag, AlertTriangle } from 'lucide-react'
 import Link from 'next/link'
+import type { OrderStatus } from '@/types'
 
 export const dynamic = 'force-dynamic'
 
-const PAID_STATUSES = ['paid', 'processing', 'shipped', 'delivered']
+const PAID_STATUSES: readonly OrderStatus[] = ['paid', 'processing', 'shipped', 'delivered']
 
 export default async function AdminDashboardPage() {
   const admin = createAdminClient()

@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation'
 import { Loader2, X, Upload } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { productSchema, type ProductFormData } from '@/lib/validations/product'
+import { productSchema, type ProductFormData, type ProductFormInput } from '@/lib/validations/product'
 import { createClient } from '@/lib/supabase/client'
 import type { Category, ProductWithCategory } from '@/types'
 
@@ -57,7 +57,7 @@ export function ProductForm({ categories, product }: ProductFormProps) {
     setValue,
     watch,
     formState: { errors, isSubmitting },
-  } = useForm<ProductFormData>({
+  } = useForm<ProductFormInput, unknown, ProductFormData>({
     resolver: zodResolver(productSchema),
     defaultValues: {
       name: product?.name ?? '',

@@ -26,6 +26,7 @@ export interface Database {
           address?: string | null
           role?: 'customer' | 'admin'
         }
+        Relationships: []
       }
       categories: {
         Row: {
@@ -45,6 +46,7 @@ export interface Database {
           slug?: string
           description?: string | null
         }
+        Relationships: []
       }
       products: {
         Row: {
@@ -84,6 +86,15 @@ export interface Database {
           is_active?: boolean
           updated_at?: string
         }
+        Relationships: [
+          {
+            foreignKeyName: 'products_category_id_fkey'
+            columns: ['category_id']
+            isOneToOne: false
+            referencedRelation: 'categories'
+            referencedColumns: ['id']
+          },
+        ]
       }
       orders: {
         Row: {
@@ -115,6 +126,15 @@ export interface Database {
           shipping_address?: Json
           updated_at?: string
         }
+        Relationships: [
+          {
+            foreignKeyName: 'orders_user_id_fkey'
+            columns: ['user_id']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
+        ]
       }
       order_items: {
         Row: {
@@ -135,6 +155,22 @@ export interface Database {
           quantity?: number
           price_at_purchase?: number
         }
+        Relationships: [
+          {
+            foreignKeyName: 'order_items_order_id_fkey'
+            columns: ['order_id']
+            isOneToOne: false
+            referencedRelation: 'orders'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'order_items_product_id_fkey'
+            columns: ['product_id']
+            isOneToOne: false
+            referencedRelation: 'products'
+            referencedColumns: ['id']
+          },
+        ]
       }
       payment_logs: {
         Row: {
@@ -154,7 +190,20 @@ export interface Database {
           created_at?: string
         }
         Update: never
+        Relationships: [
+          {
+            foreignKeyName: 'payment_logs_order_id_fkey'
+            columns: ['order_id']
+            isOneToOne: false
+            referencedRelation: 'orders'
+            referencedColumns: ['id']
+          },
+        ]
       }
     }
+    Views: Record<string, never>
+    Functions: Record<string, never>
+    Enums: Record<string, never>
+    CompositeTypes: Record<string, never>
   }
 }
